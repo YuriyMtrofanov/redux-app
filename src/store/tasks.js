@@ -6,12 +6,15 @@
 // будет применять соотв. изменения для выбранного компонента.
 import { createAction, createSlice } from "@reduxjs/toolkit"; // метод создания экшена с помощью "reduxjs/toolkit"
 import todoService from "../services/todos.service";
+import { setError } from "./errors";
 
-const initialState = [
-  { userId: 1, id: 1, title: "Task 1", completed: false },
-  { userId: 1, id: 2, title: "Task 2", completed: false },
-  { userId: 1, id: 3, title: "Task 3", completed: false }
-];
+// const initialState = [
+//   { userId: 1, id: 1, title: "Task 1", completed: false },
+//   { userId: 1, id: 2, title: "Task 2", completed: false },
+//   { userId: 1, id: 3, title: "Task 3", completed: false }
+// ];
+
+const initialState = {entities: [], isLoading: true};
 
 // Метод реализации редюсера и экшенов с помощью "Redux Toolkit. Create Sliсe". Данный подход позволяет
 // сразу реализовывать релюсер и экшены, что уменьшает количество кода.
@@ -20,33 +23,40 @@ const taskSlice = createSlice({
   initialState,
   reducers: {
     received(state, action) {
-      // state = action.payload;
-      // return state;
-      return action.payload;
+      state.entities = action.payload
+      state.isLoading = false
+      // return action.payload;
     },
     update(state, action) {
-      const elementIndex = state.findIndex(el => el.id === action.payload.id);
-      state[elementIndex] = { ...state[elementIndex], ...action.payload};
+      const elementIndex = state.entities.findIndex(el => el.id === action.payload.id);
+      state.entities[elementIndex] = { ...state.entities[elementIndex], ...action.payload};
     },
     remove(state, action) {
-      return state.filter(el => el.id !== action.payload.id);
+      state.entities = state.entities.filter(el => el.id !== action.payload.id);
+    },
+    taskRequested(state, action) { // экшен, который при успешном получении данных меняет статус загрузки
+      state.isLoading = true
+    },
+    taskRequestFailed(state, action) { // экшен, который при НЕуспешном получении данных меняет статус загрузки
+      state.isLoading = false
     }
 }});
 
 const { actions, reducer: taskReducer } = taskSlice;
-const { update, remove, received } = actions;
+const { update, remove, received, taskRequested, taskRequestFailed } = actions;
 
-const taskRequested = createAction("task/requested");
-const taskRequestFailed = createAction("task/requestFailed");
+// const taskRequested = createAction("task/requested");
+// const taskRequestFailed = createAction("task/requestFailed");
 
-export const getTasks = () => async (dispatch) => {
+export const loadTasks = () => async (dispatch) => {
     dispatch(taskRequested());
     try {
       const data = await todoService.fetch();
       // console.log("data", received(data));
       dispatch(received(data));
     } catch (error) {
-      dispatch(taskRequestFailed(error.message));
+      dispatch(taskRequestFailed()); // данный метод необходимо вызывть, чтобы поменять статус isLoading
+      dispatch(setError(error.message));
     }
 };
 // промежуточный обработчик для thunk, вызываемый в index,js в качестве коллблэка
@@ -66,6 +76,9 @@ export function titleChanged(id) {
 export function taskDeleted(id) {
   return remove({ id });
 };
+
+export const getTasks = () => (state) => state.tasks.entities;
+export const getTasksLoadingStatus = () => (state) => state.tasks.isLoading;
 
 export default taskReducer;
 /*

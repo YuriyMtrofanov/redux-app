@@ -9,19 +9,24 @@ import {
   titleChanged,
   taskDeleted,
   completeTask,
-  getTasks
+  loadTasks,
+  getTasks,
+  getTasksLoadingStatus
 } from "./store/tasks"; // в случае конфигурации ReDucks с папкой "tasks" и вложенными файлами;
+import { getErrors } from "./store/errors";
 // import configureStore from "./store/store";
 
 const store = configureStore();
 // const store = createStore();
 
 const App = (params) => {
-  const state = useSelector((state) => state);
+  const state = useSelector(getTasks());
+  const isLoading = useSelector(getTasksLoadingStatus());
+  const error = useSelector(getErrors());
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getTasks());
+    dispatch(loadTasks());
   }, []);
 
   // const changeCompleted = (taskId) => {
@@ -50,7 +55,12 @@ const App = (params) => {
     // store.dispatch(taskDeleted(taskId)); // в случае конфигурации ReDucks с папкой "tasks" и вложенными файлами;
     dispatch(taskDeleted(taskId));
   };
-
+if (isLoading === true) {
+  return (<h1>Loading...</h1>)
+}
+if (error) {
+  return (<p>{error}</p>)
+}
   return (
     <>
       <h1> APP </h1>

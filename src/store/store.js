@@ -3,9 +3,15 @@
 // import { legacy_createStore as createStore } from "redux";
 // import taskReducer from "./tasks"; // в случае конфигурации Ducks с одним файлом "tasks.js";
 // import { taskReducer } from "./tasks/reducer"; // в случае конфигурации ReDucks с папкой "tasks" и вложенными файлами;
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { logger } from "./middleware/logger";
 import taskReducer from "./tasks";
+import errorReducer from "./errors";
+
+const rootReducer = combineReducers({
+    tasks: taskReducer,
+    errors: errorReducer
+})
 
 // const initialState = [
 //     { id: 1, title: "Task 1", completed: false },
@@ -21,7 +27,7 @@ import taskReducer from "./tasks";
 
 function createStore() {
     return configureStore({
-        reducer: taskReducer,
+        reducer: rootReducer,
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware().concat(logger),
         devTools: process.env.NODE_ENV !== "production",

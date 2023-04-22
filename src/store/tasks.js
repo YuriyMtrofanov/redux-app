@@ -4,7 +4,7 @@
 // По данному id taskReducer будет определять к какому конкретно компоненту нужно применить изменения
 // Ну и taskReducer - функция, которая в зависимости от того какой "type" выбран и какой id передан
 // будет применять соотв. изменения для выбранного компонента.
-import { createAction, createSlice } from "@reduxjs/toolkit"; // метод создания экшена с помощью "reduxjs/toolkit"
+import { createSlice } from "@reduxjs/toolkit"; // метод создания экшена с помощью "reduxjs/toolkit"
 import todoService from "../services/todos.service";
 import { setError } from "./errors";
 
@@ -23,9 +23,8 @@ const taskSlice = createSlice({
   initialState,
   reducers: {
     received(state, action) {
-      state.entities = action.payload
+      state.entities = action.payload;
       state.isLoading = false
-      // return action.payload;
     },
     update(state, action) {
       const elementIndex = state.entities.findIndex(el => el.id === action.payload.id);
@@ -35,29 +34,42 @@ const taskSlice = createSlice({
       state.entities = state.entities.filter(el => el.id !== action.payload.id);
     },
     taskRequested(state, action) { // экшен, который при успешном получении данных меняет статус загрузки
-      state.isLoading = true
+      state.isLoading = true;
     },
     taskRequestFailed(state, action) { // экшен, который при НЕуспешном получении данных меняет статус загрузки
+      state.isLoading = false;
+    },
+    create(state, action) {
+      state.entities.push(action.payload);
       state.isLoading = false
+      console.log("create, action", action);
+      // console.log("create, state.entities", state.entities);
     }
 }});
 
 const { actions, reducer: taskReducer } = taskSlice;
-const { update, remove, received, taskRequested, taskRequestFailed } = actions;
-
-// const taskRequested = createAction("task/requested");
-// const taskRequestFailed = createAction("task/requestFailed");
+const { update, remove, received, taskRequested, taskRequestFailed, create } = actions;
 
 export const loadTasks = () => async (dispatch) => {
-    dispatch(taskRequested());
-    try {
-      const data = await todoService.fetch();
-      // console.log("data", received(data));
-      dispatch(received(data));
-    } catch (error) {
-      dispatch(taskRequestFailed()); // данный метод необходимо вызывть, чтобы поменять статус isLoading
-      dispatch(setError(error.message));
-    }
+  dispatch(taskRequested());
+  try {
+    const data = await todoService.fetch();
+    dispatch(received(data));
+  } catch (error) {
+    dispatch(taskRequestFailed()); // данный метод необходимо вызывть, чтобы поменять статус isLoading
+    dispatch(setError(error.message));
+  }
+};
+
+export const createTask = () => async (dispatch) => {
+  dispatch(taskRequested());
+  try {
+    const data = await todoService.post();
+    dispatch(create(data));
+  } catch (error) {
+    dispatch(taskRequestFailed());
+    dispatch(setError(error.message));
+  }
 };
 // промежуточный обработчик для thunk, вызываемый в index,js в качестве коллблэка
 export const completeTask = (id) => 

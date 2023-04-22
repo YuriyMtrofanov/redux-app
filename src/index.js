@@ -11,7 +11,8 @@ import {
   completeTask,
   loadTasks,
   getTasks,
-  getTasksLoadingStatus
+  getTasksLoadingStatus,
+  createTask
 } from "./store/tasks"; // в случае конфигурации ReDucks с папкой "tasks" и вложенными файлами;
 import { getErrors } from "./store/errors";
 // import configureStore from "./store/store";
@@ -27,6 +28,7 @@ const App = (params) => {
 
   useEffect(() => {
     dispatch(loadTasks());
+    // dispatch(createTask());
   }, []);
 
   // const changeCompleted = (taskId) => {
@@ -55,6 +57,7 @@ const App = (params) => {
     // store.dispatch(taskDeleted(taskId)); // в случае конфигурации ReDucks с папкой "tasks" и вложенными файлами;
     dispatch(taskDeleted(taskId));
   };
+
 if (isLoading === true) {
   return (<h1>Loading...</h1>)
 }
@@ -74,16 +77,17 @@ if (error) {
           <hr/>
         </li>))}
       </ul>
+      <button onClick={() => dispatch(createTask())}>Create new task</button>
     </>
   );
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <Provider store = {store}>
       <App />
     </Provider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 

@@ -12,11 +12,8 @@ const todoService = {
         });
         return data;
     },
-    post: async () => {
-        const { data } = await httpService.post(todosEndpoint, {
-            title: "example new task",
-            completed: false
-        });
+    post: async (payload) => {
+        const { data } = await httpService.post(todosEndpoint, payload);
         return data;
     }
 };

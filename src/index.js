@@ -34,6 +34,14 @@ const App = (params) => {
     dispatch(taskDeleted(taskId));
   };
 
+  const addNewTask = () => {
+    dispatch(createTask({
+      userId: 1,
+      title: "example new task",
+      completed: false
+    }));
+  };
+
 if (isLoading === true) {
   return (<h1>Loading...</h1>)
 }
@@ -53,7 +61,7 @@ if (error) {
           <hr/>
         </li>))}
       </ul>
-      <button onClick={() => dispatch(createTask())}>Create new task</button>
+      <button onClick={addNewTask}>Create new task</button>
     </>
   );
 };
